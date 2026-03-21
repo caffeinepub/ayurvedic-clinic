@@ -1,25 +1,24 @@
-# Natural Ayurveda
+# Krishna Quote Video
 
 ## Current State
-Existing Ayurvedic clinic site (वैद्यराज.com) with hero, services, testimonials, contact, and WhatsApp button.
+Scaffolded project with default frontend. No existing app content.
 
 ## Requested Changes (Diff)
 
 ### Add
-- Nothing new
+- Full-screen Krishna Quote Video page matching the user's HTML exactly
+- Black background with rain background video (https://www.w3schools.com/howto/rain.mp4) at 40% opacity
+- Gold "Lord Krishna Message" heading with fadeIn animation
+- Education quote paragraph with slideUp animation
 
 ### Modify
-- Rebuild the site to match the user-provided HTML/CSS/JS template exactly:
-  - Doctor: Vaida S B Singh
-  - Phone/WhatsApp: 7083087507
-  - Sections: Header, About Us, Services (8 items), Contact, Footer
-  - Dark teal color scheme (#0f2c3f background, #00ff88 heading, #124559 service cards, #25D366 WhatsApp button)
-  - console.log on load
+- Replace default App.tsx with the Krishna Quote Video page
 
 ### Remove
-- Old branding (वैद्यराज.com), old phone number, old layout
+- All previous website builder UI
 
 ## Implementation Plan
-- Rebuild frontend to match provided template with React components
-- Use provided color palette and layout exactly
-- WhatsApp link: https://wa.me/917083087507
+1. Rewrite App.tsx as a full-screen video quote page
+2. Background rain video, absolute positioned, muted, autoplay, loop, 40% opacity
+3. Centered overlay with gold title and animated quote text
+4. CSS animations: fadeIn (3s) on container, slideUp (5s) on paragraph
