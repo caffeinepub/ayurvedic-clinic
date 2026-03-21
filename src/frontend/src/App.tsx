@@ -1,225 +1,398 @@
-import { Leaf, MessageCircle, Phone, User } from "lucide-react";
-import { motion } from "motion/react";
-import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  AlignLeft,
+  ExternalLink,
+  Globe,
+  ImageIcon,
+  Type,
+  Video,
+  Wand2,
+} from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+import { useState } from "react";
 
-const services = [
-  "Sugar (Diabetes) Treatment",
-  "BP Control",
-  "Asthma (Dama / Shwas)",
-  "Hydrocele",
-  "Kidney Stone (Pathri)",
-  "Paralysis (Lakva)",
-  "Infertility Treatment",
-  "Men & Women Gupt Rog Treatment",
-];
-
-function handleMouseEnter(e: React.MouseEvent<HTMLAnchorElement>) {
-  e.currentTarget.style.opacity = "0.85";
+interface FormState {
+  title: string;
+  imageUrl: string;
+  description: string;
+  videoUrl: string;
 }
 
-function handleMouseLeave(e: React.MouseEvent<HTMLAnchorElement>) {
-  e.currentTarget.style.opacity = "1";
+function getYouTubeEmbedUrl(url: string): string | null {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})/,
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return `https://www.youtube.com/embed/${match[1]}`;
+  }
+  return null;
+}
+
+function buildVideoHtml(videoUrl: string): string {
+  if (!videoUrl) return "";
+  const youtubeEmbed = getYouTubeEmbedUrl(videoUrl);
+  if (youtubeEmbed) {
+    return `<div style="margin: 0 auto 24px; max-width: 560px;">
+      <iframe width="100%" height="315" src="${youtubeEmbed}"
+        frameborder="0" allowfullscreen
+        style="border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.15);"
+      ></iframe>
+    </div>`;
+  }
+  // Treat as direct MP4 or video URL
+  return `<div style="margin: 0 auto 24px;">
+    <video width="100%" style="max-width:560px; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.15);" controls>
+      <source src="${videoUrl}" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  </div>`;
+}
+
+function buildHtml(
+  title: string,
+  imageUrl: string,
+  description: string,
+  videoUrl: string,
+): string {
+  return `<!DOCTYPE html>
+<html>
+  <head>
+    <title>${title}</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        padding: 40px 20px;
+        background: #ffffff;
+        color: #1a1a1a;
+        min-height: 100vh;
+      }
+      h1 {
+        font-size: 2rem;
+        margin-bottom: 24px;
+        color: #111;
+        font-weight: 700;
+      }
+      img {
+        max-width: 300px;
+        width: 100%;
+        border-radius: 12px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+      }
+      p {
+        font-size: 1.05rem;
+        line-height: 1.7;
+        color: #444;
+        max-width: 500px;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>${title || "Untitled Website"}</h1>
+    ${buildVideoHtml(videoUrl)}
+    ${imageUrl ? `<img src="${imageUrl}" alt="${title}" />` : ""}
+    <p>${description || "No description provided."}</p>
+  </body>
+</html>`;
 }
 
 export default function App() {
-  useEffect(() => {
-    console.log("Website Loaded Successfully");
-  }, []);
+  const [form, setForm] = useState<FormState>({
+    title: "",
+    imageUrl: "",
+    description: "",
+    videoUrl: "",
+  });
+  const [generatedHtml, setGeneratedHtml] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleChange = (field: keyof FormState, value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleGenerate = () => {
+    setIsGenerating(true);
+    setTimeout(() => {
+      setGeneratedHtml(
+        buildHtml(form.title, form.imageUrl, form.description, form.videoUrl),
+      );
+      setIsGenerating(false);
+    }, 400);
+  };
+
+  const handleReset = () => {
+    setForm({ title: "", imageUrl: "", description: "", videoUrl: "" });
+    setGeneratedHtml(null);
+  };
 
   return (
-    <div
-      className="min-h-screen"
-      style={{
-        backgroundColor: "#0f2c3f",
-        color: "white",
-        fontFamily: "Arial, sans-serif",
-        textAlign: "center",
-      }}
-    >
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header style={{ backgroundColor: "#06202e", padding: "20px" }}>
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <img
-            src="/assets/generated/ayurveda-logo-transparent.dim_240x240.png"
-            alt="Natural Ayurveda Logo"
-            style={{
-              width: "120px",
-              height: "120px",
-              objectFit: "contain",
-              margin: "0 auto",
-              display: "block",
-            }}
-            data-ocid="header.logo"
-          />
-          <h1
-            style={{ color: "#00ff88", margin: "10px 0 4px" }}
-            className="text-3xl font-bold"
-          >
-            Natural Ayurveda
-          </h1>
-          <p style={{ margin: 0, opacity: 0.85 }} className="text-lg">
-            Vaida S B Singh
-          </p>
-        </motion.div>
+      <header className="border-b border-border px-6 py-4 flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center">
+            <Globe className="w-4 h-4 text-primary-foreground" />
+          </div>
+          <span className="font-display font-bold text-xl text-foreground tracking-tight">
+            SiteForge
+          </span>
+        </div>
+        <div className="ml-auto">
+          <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
+            Simple Website Builder
+          </span>
+        </div>
       </header>
 
-      {/* About Us */}
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-        style={{ padding: "30px 20px" }}
-        data-ocid="about.section"
-      >
-        <h2
-          className="text-2xl font-semibold mb-4"
-          style={{ color: "#00ff88" }}
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col lg:flex-row gap-0">
+        {/* Left Panel — Form */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="w-full lg:w-[420px] xl:w-[480px] shrink-0 border-b lg:border-b-0 lg:border-r border-border p-6 lg:p-8 flex flex-col gap-6"
         >
-          About Us
-        </h2>
-        <p
-          className="max-w-xl mx-auto leading-relaxed"
-          style={{ opacity: 0.9 }}
-        >
-          Ayurvedic vanspatiyon se bimariyon ka upchar kiya jata hai. Bhasm,
-          Ayurvedic oil therapy, massage aur natural medicines ke through
-          treatment diya jata hai.
-        </p>
-      </motion.section>
+          <div>
+            <h1 className="font-display text-2xl lg:text-3xl font-bold text-foreground mb-1">
+              Build Your Website
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Fill in the details and click Generate to preview your site.
+            </p>
+          </div>
 
-      {/* Services */}
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.35 }}
-        style={{ padding: "20px" }}
-        data-ocid="services.section"
-      >
-        <h2
-          className="text-2xl font-semibold mb-6"
-          style={{ color: "#00ff88" }}
-        >
-          Our Services
-        </h2>
-        <ul
-          style={{
-            listStyle: "none",
-            padding: 0,
-            margin: "0 auto",
-            maxWidth: "480px",
-          }}
-        >
-          {services.map((service, i) => (
-            <motion.li
-              key={service}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.4, delay: 0.4 + i * 0.07 }}
-              style={{
-                backgroundColor: "#124559",
-                margin: "10px auto",
-                padding: "12px 16px",
-                borderRadius: "10px",
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                justifyContent: "center",
-              }}
-              data-ocid={`services.item.${i + 1}`}
+          <div className="flex flex-col gap-5">
+            {/* Title */}
+            <div className="flex flex-col gap-2">
+              <Label
+                htmlFor="title"
+                className="flex items-center gap-2 text-sm font-medium text-foreground"
+              >
+                <Type className="w-3.5 h-3.5 text-primary" />
+                Website Title
+              </Label>
+              <Input
+                id="title"
+                data-ocid="builder.input"
+                placeholder="e.g. My Awesome Portfolio"
+                value={form.title}
+                onChange={(e) => handleChange("title", e.target.value)}
+                className="bg-input border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-ring"
+              />
+            </div>
+
+            {/* Video URL */}
+            <div className="flex flex-col gap-2">
+              <Label
+                htmlFor="videoUrl"
+                className="flex items-center gap-2 text-sm font-medium text-foreground"
+              >
+                <Video className="w-3.5 h-3.5 text-primary" />
+                Video URL
+              </Label>
+              <Input
+                id="videoUrl"
+                placeholder="YouTube link or direct MP4 URL"
+                value={form.videoUrl}
+                onChange={(e) => handleChange("videoUrl", e.target.value)}
+                className="bg-input border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-ring"
+              />
+              <p className="text-xs text-muted-foreground">
+                Paste a YouTube URL or a direct .mp4 video link.
+              </p>
+            </div>
+
+            {/* Image URL */}
+            <div className="flex flex-col gap-2">
+              <Label
+                htmlFor="imageUrl"
+                className="flex items-center gap-2 text-sm font-medium text-foreground"
+              >
+                <ImageIcon className="w-3.5 h-3.5 text-primary" />
+                Image URL
+              </Label>
+              <Input
+                id="imageUrl"
+                data-ocid="builder.search_input"
+                placeholder="https://example.com/photo.jpg"
+                value={form.imageUrl}
+                onChange={(e) => handleChange("imageUrl", e.target.value)}
+                className="bg-input border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-ring"
+              />
+            </div>
+
+            {/* Description */}
+            <div className="flex flex-col gap-2">
+              <Label
+                htmlFor="desc"
+                className="flex items-center gap-2 text-sm font-medium text-foreground"
+              >
+                <AlignLeft className="w-3.5 h-3.5 text-primary" />
+                Description
+              </Label>
+              <Textarea
+                id="desc"
+                data-ocid="builder.textarea"
+                placeholder="Describe your website or write some content..."
+                value={form.description}
+                onChange={(e) => handleChange("description", e.target.value)}
+                rows={4}
+                className="bg-input border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-ring resize-none"
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-3 mt-auto pt-2">
+            <Button
+              data-ocid="builder.primary_button"
+              className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold gap-2"
+              onClick={handleGenerate}
+              disabled={isGenerating}
             >
-              <Leaf size={16} style={{ color: "#00ff88", flexShrink: 0 }} />
-              <span>{service}</span>
-            </motion.li>
-          ))}
-        </ul>
-      </motion.section>
+              {isGenerating ? (
+                <>
+                  <motion.span
+                    animate={{ rotate: 360 }}
+                    transition={{
+                      duration: 0.8,
+                      repeat: Number.POSITIVE_INFINITY,
+                      ease: "linear",
+                    }}
+                    className="inline-block"
+                  >
+                    <Wand2 className="w-4 h-4" />
+                  </motion.span>
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Wand2 className="w-4 h-4" />
+                  Generate Website
+                </>
+              )}
+            </Button>
+            {generatedHtml && (
+              <Button
+                data-ocid="builder.secondary_button"
+                variant="outline"
+                className="border-border text-muted-foreground hover:text-foreground"
+                onClick={handleReset}
+              >
+                Reset
+              </Button>
+            )}
+          </div>
+        </motion.div>
 
-      {/* Contact */}
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.5 }}
-        style={{ padding: "30px 20px" }}
-        data-ocid="contact.section"
-      >
-        <h2
-          className="text-2xl font-semibold mb-4"
-          style={{ color: "#00ff88" }}
-        >
-          Contact Us
-        </h2>
-        <p className="mb-2">
-          <User
-            size={16}
-            style={{
-              display: "inline",
-              marginRight: "6px",
-              verticalAlign: "middle",
-            }}
-          />
-          <strong>Doctor:</strong> Vaida S B Singh
-        </p>
-        <p className="mb-4">
-          <Phone
-            size={16}
-            style={{
-              display: "inline",
-              marginRight: "6px",
-              verticalAlign: "middle",
-            }}
-          />
-          <strong>Phone / WhatsApp:</strong> 7083087507
-        </p>
-        <a
-          href="https://wa.me/917083087507"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "8px",
-            padding: "12px 24px",
-            backgroundColor: "#25D366",
-            color: "white",
-            textDecoration: "none",
-            borderRadius: "5px",
-            fontWeight: "bold",
-            fontSize: "16px",
-            transition: "opacity 0.2s",
-          }}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-          data-ocid="contact.whatsapp_button"
-        >
-          <MessageCircle size={20} />
-          Chat on WhatsApp
-        </a>
-      </motion.section>
+        {/* Right Panel — Preview */}
+        <div className="flex-1 flex flex-col p-6 lg:p-8 gap-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-lg font-semibold text-foreground flex items-center gap-2">
+              <ExternalLink className="w-4 h-4 text-primary" />
+              Live Preview
+            </h2>
+            {generatedHtml && (
+              <span className="text-xs text-primary bg-accent px-2 py-1 rounded-full font-medium">
+                ✓ Generated
+              </span>
+            )}
+          </div>
+
+          <div className="flex-1 rounded-xl border border-border overflow-hidden shadow-[0_0_0_1px_oklch(var(--border)),0_8px_40px_-8px_rgba(0,0,0,0.6)] relative min-h-[400px] lg:min-h-0">
+            {/* Browser chrome bar */}
+            <div className="bg-muted border-b border-border px-4 py-2.5 flex items-center gap-2">
+              <div className="flex gap-1.5">
+                <div className="w-3 h-3 rounded-full bg-destructive/60" />
+                <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
+                <div className="w-3 h-3 rounded-full bg-primary/60" />
+              </div>
+              <div className="flex-1 bg-background rounded-md px-3 py-1 mx-2 text-xs text-muted-foreground truncate">
+                {form.title
+                  ? `${form.title.toLowerCase().replace(/\s+/g, "-")}.site`
+                  : "preview"}
+              </div>
+            </div>
+
+            {/* iframe / placeholder */}
+            <AnimatePresence mode="wait">
+              {generatedHtml ? (
+                <motion.iframe
+                  key="iframe"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  title="Website Preview"
+                  srcDoc={generatedHtml}
+                  className="w-full h-full"
+                  style={{ minHeight: "380px", border: "none" }}
+                  sandbox="allow-scripts allow-same-origin allow-presentation"
+                />
+              ) : (
+                <motion.div
+                  key="placeholder"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  data-ocid="builder.empty_state"
+                  className="flex flex-col items-center justify-center h-full min-h-[380px] gap-4 text-center p-8"
+                >
+                  <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-2">
+                    <Globe className="w-8 h-8 text-muted-foreground" />
+                  </div>
+                  <p className="font-display text-lg font-semibold text-muted-foreground">
+                    No Preview Yet
+                  </p>
+                  <p className="text-sm text-muted-foreground max-w-xs">
+                    Fill in the form on the left and click{" "}
+                    <span className="text-primary font-medium">
+                      Generate Website
+                    </span>{" "}
+                    to see your site come to life here.
+                  </p>
+                  <div className="flex flex-col gap-2 mt-2 w-full max-w-xs">
+                    {[
+                      "Website Title",
+                      "Video URL",
+                      "Image URL",
+                      "Description",
+                    ].map((label) => (
+                      <div
+                        key={label}
+                        className="flex items-center gap-2 bg-muted rounded-lg px-3 py-2"
+                      >
+                        <div className="w-2 h-2 rounded-full bg-border" />
+                        <span className="text-xs text-muted-foreground">
+                          {label}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      </main>
 
       {/* Footer */}
-      <footer
-        style={{
-          backgroundColor: "#06202e",
-          padding: "16px",
-          marginTop: "20px",
-          fontSize: "14px",
-          opacity: 0.8,
-        }}
-      >
-        <p style={{ margin: 0 }}>
-          © 2026 Natural Ayurveda | All Rights Reserved
-        </p>
-        <p style={{ margin: "6px 0 0", fontSize: "12px", opacity: 0.7 }}>
-          Built with love using{" "}
+      <footer className="border-t border-border px-6 py-3 text-center">
+        <p className="text-xs text-muted-foreground">
+          © {new Date().getFullYear()}. Built with love using{" "}
           <a
             href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(window.location.hostname)}`}
             target="_blank"
             rel="noopener noreferrer"
-            style={{ color: "#00ff88", textDecoration: "none" }}
+            className="text-primary hover:underline"
           >
             caffeine.ai
           </a>
